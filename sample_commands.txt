@@ -1,0 +1,2 @@
+curl -X POST https://5j24po5h0d.execute-api.us-east-1.amazonaws.com/dev/products -d '{"title": "test", "price":"1"}'
+curl -X OPTIONS https://5j24po5h0d.execute-api.us-east-1.amazonaws.com/dev/products 

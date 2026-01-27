@@ -1,0 +1,241 @@
+<html>
+    <head>
+<style>
+
+table.nice {
+    border-collapse: collapse; /* Prevents borders from doubling up */
+    width: 100%;
+}
+tr.nice td{
+    border: 1px solid darkcyan; /* Applies a single, consistent border to all cells */
+    padding: 8px;
+    text-align: left;
+}
+
+
+
+</style>    
+    </head>
+
+<body>
+    <h1>Products</h1>
+    <table class="nice">
+        <thead>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </thead>
+        <tbody >
+            <!-- ko foreach: products -->
+            <tr class="nice">
+                <td data-bind="text:$data.title"></td>
+                <td data-bind="text:category"></td>
+                <td data-bind="text:price"></td>
+                <td data-bind="text:description"></td>
+                <td>
+                    <button data-bind="click: function(){start_edit($data)}">Update</button>
+                    <button data-bind="click:function(){delete_product($data.id)}">Delete</button>
+                    <!--
+                    <button>Get Images</button>
+                    <button>Add Images</button>
+                    -->
+                </td>
+            </tr>
+            <tr colspan="5" data-bind="if: show_edit_form" >
+                <td>
+                    <form id="add-form" data-bind="submit: function(){update_product($data)}">
+                        <fieldset>
+                            <legend>Product (above) <span data-bind="text:id"></span></legend>
+                            <table>
+                                <tr>
+                                    <td> <label for="title">Name/Title</label> </td>
+                                    <td> <input type="text" name="title" data-bind="value: product_form.title"> </td>
+                                </tr>
+                                <tr>
+                                    <td><label for="description">Description</label></td>
+                                    <td><textarea data-bind="value: product_form.description"></textarea></td>
+                                </tr>
+                                <tr>
+                                    <td><label for="price">Price</label></td>
+                                    <td> <input type="text" name="price" data-bind="value: product_form.price"> </td>
+                                </tr>
+                                <tr>
+                                    <td><label for="category">Category</label></td>
+                                    <td> <input type="text" name="category" data-bind="value: product_form.category"> </td>
+                                </tr>
+                            </table>
+                            <button type="submit">Update</button>
+                            <button data-bind="click: function(){cancel_edit($data)}">Cancel</button>
+                        </fieldset>       
+                    </form>
+
+                </td>
+            </tr>
+            <!-- /ko -->
+        </tbody>
+    </table>  
+    <span data-bind="ifnot: show_add_product_form"> <button data-bind="click: show_clicked">Add Product</button></span>
+    <div data-bind="if: show_add_product_form">
+        <form id="add-form" data-bind="submit: insert_product">
+            <fieldset>
+                <legend>Product Attributes</legend>
+                <table>
+                    <tr>
+                        <td> <label for="title">Name/Title</label> </td>
+                        <td> <input type="text" name="title" data-bind="value: product_form.title"> </td>
+                    </tr>
+                    <tr>
+                        <td><label for="description">Description</label></td>
+                        <td><textarea data-bind="value: product_form.description"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><label for="price">Price</label></td>
+                        <td> <input type="text" name="price" data-bind="value: product_form.price"> </td>
+                    </tr>
+                    <tr>
+                        <td><label for="category">Category</label></td>
+                        <td> <input type="text" name="category" data-bind="value: product_form.category"> </td>
+                    </tr>
+                </table>
+                <button type="submit">Insert</button>
+            </fieldset>       
+        </form>
+    </div>
+<script 
+    type='text/javascript' 
+    src='https://ajax.aspnetcdn.com/ajax/knockout/knockout-3.5.0.js'
+    crossorigin="anonymous"
+    integrity="sha384-cd17CJ+/vjGWK4Gipm1JaKFFdNvWJhaJZ80qgEJvqqMbZAitKqV22KYncJZxvrmW"
+></script>
+
+<script>
+
+
+function start_edit(row) {
+    console.log('se',row);
+    row.show_edit_form(true);
+}
+
+function cancel_edit(row) {
+    console.log('canceling',row);
+    row.show_edit_form(false);
+}
+
+function makeEmptyProduct(){
+    return {
+        title:'ttt',
+        description:'Stuff',
+        price:'123',
+        category:'Stuff'
+    }
+}
+var mainViewModel={
+    products:ko.observable(augment([
+            {
+                title:"Loading..."
+            }
+        ])
+    ),
+    show_add_product_form:ko.observable(false),
+    show_clicked: function() {
+        console.log('showing', mainViewModel.show_add_product_form);
+        mainViewModel.show_add_product_form(true);
+    },
+    product_form: makeEmptyProduct(),
+};
+
+var headers={
+    "Content-Type": "application/json",
+    "Authorization": get_token()
+};
+
+var base_url=get_base_url()+"/";
+// make sure every object has all the needed fields, just in case
+function augment(data) {
+    for (const obj of data) {
+        // console.log('augmenting',obj);
+        for(const prop of ['id','title','description','price','category']) {
+            if(!obj.hasOwnProperty(prop)){
+                obj[prop]="";        
+            }
+        }
+        obj['show_edit_form']=ko.observable(false);
+        obj['product_form']={...obj};
+        // console.log('augmented',obj);
+    }
+    return data;
+}
+
+function get_token()
+{
+    try {
+        const token_type='id_token'; // 'access_token'
+        const hash=window.location.hash.substring(1);
+        const id_var=hash.split('&').filter(v => v.startsWith(token_type))[0];
+        return id_var.split("=")[1];    
+    } catch(error) {
+        console.log("Token error",error);
+        return "";
+    }
+}
+
+function get_base_url()
+{
+    var paths=document.location.pathname.split("/");
+    paths.pop();
+    const basepath=paths.join("/");
+    return window.location.protocol+"//"+window.location.host +basepath;
+}
+
+function get_products() {    
+    url=base_url+"products";
+    console.log('u',url,base_url);
+    fetch(url,{headers:headers})
+        .then(response => response.json())
+        .then(data=>mainViewModel.products(augment(data)))
+}
+
+function delete_product(product_id){
+    console.log('deleting',product_id);
+    url=base_url+"products/"+product_id;
+    console.log('u',url,base_url);
+    fetch(url,{method:"DELETE",headers:headers})
+        .then(response => get_products())
+}
+
+function insert_product()
+{
+    mainViewModel.show_add_product_form(false);
+    const url=base_url+'products';
+    const body=ko.toJSON(mainViewModel.product_form);
+    console.log('adding',body);
+    fetch(url,{method:"POST",headers:headers,body: body})
+        .then(response => { get_products();} )
+
+}
+
+function update_product(product_vm)
+{
+    console.log('updating',product_vm);
+    product_vm.show_edit_form(false);
+
+    const url=base_url+'products/'+product_vm.id;
+    const body=ko.toJSON(product_vm.product_form);
+    console.log('updating',body);
+    fetch(url,{method:"PUT",headers:headers,body: body})
+        .then(response => { get_products();} )
+
+}
+
+addEventListener("load", (event) => {
+    ko.applyBindings(mainViewModel);
+    get_products();
+});
+
+</script>        
+    
+
+</body>
+</html>

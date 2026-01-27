@@ -1,0 +1,20 @@
+It does not appear that by following the instruction learner will achieve success. The sequence is referring to security group, subnets and execution role arn, which aren't articulated in terms of how they come into existence, therefore learner will get stuck being unable to deploy.
+_______
+In the service definition below, where do the subnets/security groups come from? Did we ask learner to create/make note of these in earlier lesson?
+______
+Should the containers here have public IPs? As we are using loadbalancer for fronting traffic, should these not be with private IPs?
+
+______
+For building and pushing the images section:
+
+Reader MUST be given an option of of using either Docker or Finch as Docker has a large user base and learners aren't likely to switch tooling. Install/build instructions should be provided for both
+
+Get login token - we should provide reference link to where user can copy those instructions in the ECR registry AWS console for future reference.
+
+Same for build/tag/push - lets include reference to those in ECR console for learner's convenience.
+
+_______
+The version of Python here, should be consistent with version of python in the environment setup section at the beginning of this course. Learners should not have to worry about switching between environment versions mid-flight as that is quite the detractor from learning.
+
+_______
+For sections in basic concepts, first letter should be capitalized "Task definition", "Task", etc.

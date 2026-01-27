@@ -1,0 +1,17 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Entered the install phase..."
+      - npm install -g aws-cdk
+      - pip install -r requirements.txt
+    finally:
+      - echo "Install done"
+  build:
+    commands:
+      - echo "Entered the build phase..."
+      - cdk deploy FullApiStack --no-execute --no-notices --require-approval never
+    finally:
+      - echo "Done building"
+
